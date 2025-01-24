@@ -57,6 +57,9 @@ export default function Home() {
       <p className="text-sm text-muted-foreground animate-bounce">
         Psst! Turn up your volume for a surprise! 🔊
       </p>
+      <p className="text-sm text-muted-foreground mt-4">
+        Cat photos provided by The Cat API • Powered by Replit
+      </p>
     </div>
   );
 }
