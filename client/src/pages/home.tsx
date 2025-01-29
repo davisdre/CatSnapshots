@@ -13,11 +13,7 @@ export default function Home() {
   const { data, isLoading } = useQuery({
     queryKey: ["/api/cat", imageId],
     queryFn: async () => {
-      const response = await fetch("https://api.thecatapi.com/v1/images/search", {
-        headers: {
-          'x-api-key': 'live_0RJv3PVY7eV7SfaCyKCd6pnXV8fydSsNsbAwqLdVkj4gUuFKkEtaJWGb34ZXOdKN'
-        }
-      });
+      const response = await fetch("https://api.thecatapi.com/v1/images/search");
       const [data] = await response.json();
       playMeow();
       return data.url;
