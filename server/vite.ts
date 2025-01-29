@@ -42,12 +42,11 @@ export async function setupVite(app: Express, server: Server) {
 
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
-    // Sanitize and validate URL
-    const rawUrl = req.originalUrl;
-    const url = encodeURIComponent(rawUrl).replace(/[^a-zA-Z0-9-_~/]/g, '');
+    // Get the URL and do basic sanitization
+    const url = req.originalUrl;
     
-    // Only allow paths that make sense for our app
-    if (!url.match(/^[/][\w\-~/]*$/)) {
+    // Only block potentially dangerous characters
+    if (url.includes('<') || url.includes('>') || url.includes('"') || url.includes("'")) {
       return res.status(400).send('Invalid URL');
     }
 
