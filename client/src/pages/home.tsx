@@ -13,11 +13,26 @@ export default function Home() {
   const { data, isLoading } = useQuery({
     queryKey: ["/api/cat", imageId],
     queryFn: async () => {
-      const response = await fetch("https://api.thecatapi.com/v1/images/search");
-      const [data] = await response.json();
-      playMeow();
-      return data.url;
-    }
+        try {
+          const response = await fetch("https://api.thecatapi.com/v1/images/search", {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const [data] = await response.json();
+          playMeow();
+          return data.url;
+        } catch (error) {
+          console.error('Error fetching cat image:', error);
+          throw error;
+        }
+      }
   });
 
   const generateNewCat = () => {
