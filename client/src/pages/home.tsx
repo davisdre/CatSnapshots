@@ -5,35 +5,40 @@ import { ImageContainer } from "@/components/ui/image-container";
 import { PawPrint } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAudio } from "@/lib/use-audio";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [imageId, setImageId] = useState(0);
   const playMeow = useAudio("/api/meow");
+  const { toast } = useToast();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["/api/cat", imageId],
     queryFn: async () => {
-        try {
-          const response = await fetch("https://api.thecatapi.com/v1/images/search", {
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'x-api-key': 'live_S0QEdDMfAHKkzD3SJHOPtWJZxYPrp0Jec0DxMJIHO37Zw7SgQ8BtEzYnqCjGCIjL'
-            }
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+      try {
+        const response = await fetch("https://api.thecatapi.com/v1/images/search", {
+          headers: {
+            'x-api-key': import.meta.env.VITE_CAT_API_KEY
           }
+        });
 
-          const [data] = await response.json();
-          playMeow();
-          return data.url;
-        } catch (error) {
-          console.error('Error fetching cat image:', error);
-          throw error;
+        if (!response.ok) {
+          throw new Error(`Failed to fetch cat image (${response.status})`);
         }
+
+        const [data] = await response.json();
+        playMeow();
+        return data.url;
+      } catch (error) {
+        console.error('Error fetching cat image:', error);
+        toast({
+          title: "Uh oh! 😿",
+          description: "Failed to fetch a new cat image. Please try again!",
+          variant: "destructive"
+        });
+        throw error;
       }
+    }
   });
 
   const generateNewCat = () => {
@@ -65,6 +70,7 @@ export default function Home() {
         size="lg"
         onClick={generateNewCat}
         className="text-lg gap-2 hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl bg-primary/90 hover:bg-primary"
+        disabled={isLoading}
       >
         <PawPrint className="w-6 h-6" />
         Generate New Cat 🎲
