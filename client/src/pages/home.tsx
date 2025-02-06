@@ -15,30 +15,77 @@ export default function Home() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/cat", imageId],
     queryFn: async () => {
-      try {
-        const response = await fetch("https://api.thecatapi.com/v1/images/search", {
-          headers: {
-            'x-api-key': import.meta.env.VITE_CAT_API_KEY
-          }
-        });
+      const apiKey = import.meta.env.VITE_CAT_API_KEY?.trim();
+      console.log("Using API Key:", apiKey ? "Key exists" : "Key missing");
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch cat image (${response.status})`);
-        }
-
-        const [data] = await response.json();
-        playMeow();
-        return data.url;
-      } catch (error) {
-        console.error('Error fetching cat image:', error);
+      if (!apiKey) {
+        const error = new Error('Missing Cat API key');
+        console.error('API Key Error:', error);
         toast({
-          title: "Uh oh! 😿",
-          description: "Failed to fetch a new cat image. Please try again!",
+          title: "Configuration Error",
+          description: "Missing Cat API key. Please check your environment configuration.",
           variant: "destructive"
         });
         throw error;
       }
-    }
+
+      try {
+        console.log("Initiating API request...");
+        const response = await fetch("https://api.thecatapi.com/v1/images/search?limit=1", {
+          method: 'GET',
+          headers: {
+            'x-api-key': apiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+        });
+
+        console.log("API Response status:", response.status);
+
+        let responseData;
+        try {
+          responseData = await response.json();
+          console.log("API Response data:", responseData);
+        } catch (parseError) {
+          console.error('JSON Parse Error:', parseError);
+          throw new Error('Failed to parse API response');
+        }
+
+        if (!response.ok) {
+          const error = new Error(
+            responseData.message || `HTTP error! status: ${response.status}`
+          );
+          console.error('API Error:', error);
+          throw error;
+        }
+
+        if (!Array.isArray(responseData) || responseData.length === 0) {
+          const error = new Error('Invalid response format from Cat API');
+          console.error('Data Format Error:', error);
+          throw error;
+        }
+
+        // Only play sound after successful fetch
+        try {
+          await playMeow();
+        } catch (soundError) {
+          console.warn('Failed to play sound:', soundError);
+          // Don't throw here - we still want to show the image even if sound fails
+        }
+
+        return responseData[0].url;
+      } catch (error) {
+        console.error('Error fetching cat image:', error);
+        toast({
+          title: "Uh oh! 😿",
+          description: error instanceof Error ? error.message : "Failed to fetch a new cat image. Please try again!",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   const generateNewCat = () => {
