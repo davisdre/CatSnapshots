@@ -17,7 +17,8 @@ export default function Home() {
           const response = await fetch("https://api.thecatapi.com/v1/images/search", {
             headers: {
               'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              'Accept': 'application/json',
+              'x-api-key': 'live_S0QEdDMfAHKkzD3SJHOPtWJZxYPrp0Jec0DxMJIHO37Zw7SgQ8BtEzYnqCjGCIjL'
             }
           });
 
