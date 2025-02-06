@@ -8,7 +8,13 @@ export function registerRoutes(app: Express): Server {
   app.use((_req, res, next) => {
     res.setHeader(
       'Content-Security-Policy',
-      "default-src 'self'; connect-src 'self' https://api.thecatapi.com; img-src 'self' https://cdn2.thecatapi.com https://cdn3.thecatapi.com https://cdn4.thecatapi.com https://cdn.thecatapi.com; media-src 'self' https://cdn.freesound.org; script-src 'self' 'unsafe-inline' 'unsafe-eval';"
+      "default-src 'self';" +
+      "connect-src 'self' https://api.thecatapi.com https://cdn.freesound.org;" +
+      "img-src 'self' https://*.thecatapi.com data:;" +
+      "media-src 'self' https://cdn.freesound.org;" +
+      "style-src 'self' 'unsafe-inline';" +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval';" +
+      "font-src 'self' data:;"
     );
     next();
   });
