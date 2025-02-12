@@ -1,51 +1,27 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ImageContainer } from "@/components/ui/image-container";
-import { PawPrint } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { useAudio } from "@/lib/use-audio";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react'
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ImageContainer } from "@/components/ui/image-container"
+import { PawPrint } from "lucide-react"
 
 export default function Home() {
-  const [imageId, setImageId] = useState(0);
-  const playMeow = useAudio("/api/meow");
-  const { toast } = useToast();
+  const [imageUrl, setImageUrl] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const fetchCatImage = async () => {
-    const apiKey = import.meta.env.VITE_CAT_API_KEY?.trim();
-
-    if (!apiKey) {
-      throw new Error('Missing Cat API key');
+  const generateNewCat = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/meow')
+      if (!response.ok) throw new Error('Failed to fetch')
+      const data = await response.json()
+      setImageUrl(data.url)
+      // Play meow sound here if needed
+    } catch (error) {
+      console.error('Error generating cat:', error)
+    } finally {
+      setIsLoading(false)
     }
-
-    const response = await fetch("https://api.thecatapi.com/v1/images/search?limit=1", {
-      headers: {
-        'x-api-key': apiKey,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('Invalid response from Cat API');
-    }
-
-    await playMeow().catch(console.warn);
-    return data[0].url;
-  };
-
-  const { data: imageUrl, isLoading, error } = useQuery({
-    queryKey: ["cat-image", imageId],
-    queryFn: fetchCatImage,
-    retry: 1,
-    refetchOnWindowFocus: false
-  });
-
-  const generateNewCat = () => {
-    setImageId(prev => prev + 1);
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-background flex flex-col items-center justify-center p-4 space-y-8">
@@ -85,5 +61,5 @@ export default function Home() {
         Cat photos provided by The Cat API • Powered by Replit
       </p>
     </div>
-  );
+  )
 }
