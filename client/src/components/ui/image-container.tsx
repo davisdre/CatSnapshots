@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 interface ImageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
   isLoading?: boolean;
+  alt?: string; // Added alt prop to the interface
 }
 
 export function ImageContainer({ 
   src, 
   isLoading, 
   className,
+  alt = "Image", // Added default value for alt
   ...props 
 }: ImageContainerProps) {
   const [isImageLoading, setIsImageLoading] = useState(true);
@@ -39,7 +41,7 @@ export function ImageContainer({
     <div className={cn("relative overflow-hidden rounded-lg", className)} {...props}>
       <img
         src={src}
-        alt="Random cat"
+        alt={alt}
         className="w-full h-full object-cover transition-opacity duration-300"
       />
     </div>
