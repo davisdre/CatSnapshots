@@ -59,7 +59,7 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error(err); // Log the error instead of throwing it
   });
 
   if (app.get("env") === "development") {
