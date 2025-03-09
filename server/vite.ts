@@ -42,7 +42,13 @@ export async function setupVite(app: Express, server: Server) {
 
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
+    // Get the URL and do basic sanitization
     const url = req.originalUrl;
+    
+    // Only block potentially dangerous characters
+    if (url.includes('<') || url.includes('>') || url.includes('"') || url.includes("'")) {
+      return res.status(400).send('Invalid URL');
+    }
 
     try {
       const clientTemplate = path.resolve(
@@ -55,8 +61,12 @@ export async function setupVite(app: Express, server: Server) {
       // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(`src="/src/main.tsx"`, `src="/src/main.tsx?v=${nanoid()}"`)
+      // Use sanitized URL for transformation
       const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      res.status(200).set({ 
+        "Content-Type": "text/html",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+      }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
